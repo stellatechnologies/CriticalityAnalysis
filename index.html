@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Electron + vis.js Fullscreen App</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Optional: to remove scrollbar */
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+        }
+
+        .vis-network {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="vis-network"></div>
+    </div>
+
+    <script src="./node_modules/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="./renderer.js"></script>
+</body>
+</html>
