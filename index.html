@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Electron + vis.js Fullscreen App</title>
+    <title>Node Connection App</title>
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden; /* Optional: to remove scrollbar */
-        }
-
-        #container {
-            width: 100%;
-            height: 100%;
-        }
-
-        .vis-network {
-            width: 100%;
-            height: 100%;
+        #network {
+            width: 800px;
+            height: 600px;
+            border: 1px solid lightgray;
         }
     </style>
 </head>
 <body>
-    <div id="container">
-        <div class="vis-network"></div>
+    <div>
+        <input type="text" id="missionName" placeholder="Mission Name">
+        <button id="addMission">Add Mission</button>
     </div>
+    <div>
+        <input type="text" id="dataName" placeholder="Data Name">
+        <button id="addData">Add Data</button>
+    </div>
+    <div id="network"></div>
+    <input type="file" id="jsonInput" accept=".json">
+    <button id="saveData">Save Data</button>
 
-    <script src="./node_modules/vis-network/standalone/umd/vis-network.min.js"></script>
-    <script src="./renderer.js"></script>
+
+    <div id="dataOutput" style="margin-top: 20px; white-space: pre-wrap;"></div>
+
+    <script src="renderer.js"></script>
 </body>
 </html>
