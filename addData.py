@@ -45,7 +45,7 @@ for _ in range(10):
         chosen_missions = random.sample(missions_without_parent, num_missions)
         data_node, hierarchy = generate_data_node_and_hierarchy(chosen_missions)
         data['OperationalData'].append(data_node)
-        data['MissionHierarchy'].extend(hierarchy)
+        data['Mission_OperationalData'].extend(hierarchy)
 
 # Print updated data
 print(json.dumps(data, indent=2))

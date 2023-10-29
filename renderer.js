@@ -36,6 +36,97 @@ const operationalData = [];
 const missionHierarchy = [];
 const missionOperationalData = [];
 
+
+// Function to find all leaf mission nodes starting from a given node
+function listLeafMissionNodes(nodeId) {
+    const leafNodes = [];
+    const missionNodeIds = missionHierarchy.map(mh => mh.ParentMission);
+
+    const traverse = (currentNodeId) => {
+        const childMissions = missionHierarchy.filter(mh => mh.ChildMission === currentNodeId).map(mh => mh.ParentMission);
+
+        if (!childMissions.some(childId => missionNodeIds.includes(childId))) {
+            leafNodes.push(currentNodeId);
+        } else {
+            childMissions.forEach(traverse);
+        }
+    };
+
+    traverse(nodeId);
+
+    // console.log('Leaf Nodes:', leafNodes); 
+
+    const leafNodeDetails = leafNodes.map(nodeId => {
+        const missionDetail = missionData.find(m => m.UUID === nodeId);
+        return missionDetail ? missionDetail.Name : "";
+    });
+
+    
+
+    // Get the Operational Data connected to the leaf nodes
+    const leafOperationalData = [];
+    leafNodes.forEach(nodeId => {
+        const operationalDataForMission = missionOperationalData.filter(mo => mo.Mission === nodeId).map(mo => mo.OperationalData);
+        leafOperationalData.push(...operationalDataForMission);
+    });
+
+    // Get the Operational Data details
+    const leafOperationalDataDetails = leafOperationalData.map(nodeId => {
+        const operationalDetail = operationalData.find(d => d.UUID === nodeId);
+        return operationalDetail ? operationalDetail.Name : "";
+    });
+
+    // Get the percentage for each operational data for the number of leaf nodes
+    let opDataPercentages = {};
+    leafOperationalData.forEach(nodeId => {
+        if (opDataPercentages[nodeId]) {
+            opDataPercentages[nodeId] += 1;
+        } else {
+            opDataPercentages[nodeId] = 1;
+        }
+    }
+    );
+
+    console.log(opDataPercentages);
+
+
+
+    // Calculate the percentage of operational data for the number of leaf nodes  opDataPercentages[nodeId] / leafNodes.length
+    const leafOperationalDataPercentage = Object.keys(opDataPercentages).map(key => {
+        return { [key]: (opDataPercentages[key] / leafNodes.length) * 100 };
+    });
+
+    // console.log(leafOperationalDataPercentage);
+
+
+    // Replace the operational data UUIDs with the operational data names
+    const leafOperationalDataPercentageDetails = leafOperationalDataPercentage.map(item => {
+        const key = Object.keys(item)[0];
+        const operationalDetail = operationalData.find(d => d.UUID === key);
+        return operationalDetail ? { [operationalDetail.Name]: item[key] } : "";
+    });
+
+    console.log(leafOperationalDataPercentageDetails);
+
+
+
+
+    // Show the leaf node details in the node details section
+    document.getElementById('nodeDetails').innerHTML = `<p>Leaf Missions: ${leafNodes.length}</p>
+                                                            <p>Operational Data: ${leafOperationalData.length}</p>`;
+
+    // Print the Operational Data percentages in the node details section in a pretty format
+    let opDataPercentagesPretty = "";
+    leafOperationalDataPercentageDetails.forEach(item => {
+        const key = Object.keys(item)[0];
+        opDataPercentagesPretty += `<p>${key}: ${item[key].toFixed(2)}%</p>`;
+    });
+
+    document.getElementById('nodeDetails').innerHTML += opDataPercentagesPretty;
+    
+
+}
+
 // Function to print nodes and edges 
 function printData() {
     const formattedData = {
@@ -139,7 +230,6 @@ function highlightConnectedNodes(nodeId, colorMission, colorOperationalData) {
 // Handle node selection for creating connections
 myNetwork.on("selectNode", function (params) {
     if (params.event.srcEvent.shiftKey) {  // Check if shift key is pressed
-        console.log('shift pressed');
         if (firstSelectedNode === null) {
             firstSelectedNode = params.nodes[0];
         } else if (firstSelectedNode !== params.nodes[0]) {
@@ -276,103 +366,22 @@ document.getElementById('saveData').addEventListener('click', () => {
 
 
 document.addEventListener('keydown', function (event) {
-    // Check if the 'i' key is pressed
     if (event.key === 'i' || event.key === 'I') {
-
-        // Get the selected nodes
         const selectedNodes = myNetwork.getSelectedNodes();
-        
-        // Check if there is a selected node
         if (selectedNodes.length > 0) {
-            // Get the first selected node
             const selectedNode = data.nodes.get(selectedNodes[0]);
-
-            // Check if the selected node is a mission
             if (selectedNode.group === 'Mission') {
-                // Highlight the selected node and all connected missions in light orange and all connected operational data in light green
+                listLeafMissionNodes(selectedNode.id);
+            }
+        }
+    } else if (event.key === 'h' || event.key === 'H') { // Use 'h' key for highlighting
+        const selectedNodes = myNetwork.getSelectedNodes();
+        if (selectedNodes.length > 0) {
+            const selectedNode = data.nodes.get(selectedNodes[0]);
+            if (selectedNode.group === 'Mission') {
                 highlightConnectedNodes(selectedNode.id, '#ffcc99', '#ccffcc');
             }
-        } else {
-            // Reset colors of all nodes to their original colors
-            data.nodes.forEach(node => {
-                let originalColor = '#a79aff'; // Default color for missions
-                if (node.group === 'OperationalData') {
-                    originalColor = '#ffffa8'; // Default color for operational data
-                }
-                data.nodes.update({ id: node.id, color: originalColor });
-            });
-
         }
     }
-    if (event.key === 'Delete') {
-        const selectedNodes = myNetwork.getSelectedNodes();
-        const selectedEdges = myNetwork.getSelectedEdges();
-
-        if (selectedNodes.length > 0) {
-            // Remove nodes from data
-            selectedNodes.forEach(nodeId => {
-                const node = data.nodes.get(nodeId);
-                if (node.group === 'Mission') {
-                    const missionIndex = missionData.findIndex(m => m.UUID === nodeId);
-                    if (missionIndex > -1) {
-                        missionData.splice(missionIndex, 1);
-                    }
-
-                    // Remove associated Mission Hierarchy relationships
-                    const associatedHierarchy = missionHierarchy.filter(mh => mh.ParentMission === nodeId || mh.ChildMission === nodeId);
-                    associatedHierarchy.forEach(mh => {
-                        const index = missionHierarchy.indexOf(mh);
-                        if (index > -1) {
-                            missionHierarchy.splice(index, 1);
-                        }
-                    });
-
-                    // Remove associated Mission Operational Data relationships
-                    const associatedOperational = missionOperationalData.filter(mo => mo.Mission === nodeId);
-                    associatedOperational.forEach(mo => {
-                        const index = missionOperationalData.indexOf(mo);
-                        if (index > -1) {
-                            missionOperationalData.splice(index, 1);
-                        }
-                    });
-                } else if (node.group === 'OperationalData') {
-                    const dataIndex = operationalData.findIndex(d => d.UUID === nodeId);
-                    if (dataIndex > -1) {
-                        operationalData.splice(dataIndex, 1);
-                    }
-
-                    // Remove associated Mission Operational Data relationships
-                    const associatedOperational = missionOperationalData.filter(mo => mo.OperationalData === nodeId);
-                    associatedOperational.forEach(mo => {
-                        const index = missionOperationalData.indexOf(mo);
-                        if (index > -1) {
-                            missionOperationalData.splice(index, 1);
-                        }
-                    });
-                }
-            });
-
-            data.nodes.remove(selectedNodes);
-        }
-
-        if (selectedEdges.length > 0) {
-            // Remove edges from data and relationships
-            selectedEdges.forEach(edgeId => {
-                const edge = data.edges.get(edgeId);
-                const missionHierarchyIndex = missionHierarchy.findIndex(mh => mh.ParentMission === edge.from && mh.ChildMission === edge.to);
-                if (missionHierarchyIndex > -1) {
-                    missionHierarchy.splice(missionHierarchyIndex, 1);
-                }
-
-                const missionOperationalDataIndex = missionOperationalData.findIndex(mo => mo.Mission === edge.from && mo.OperationalData === edge.to);
-                if (missionOperationalDataIndex > -1) {
-                    missionOperationalData.splice(missionOperationalDataIndex, 1);
-                }
-            });
-
-            data.edges.remove(selectedEdges);
-        }
-
-        // printData(); // Print updated data
-    }
+    // Rest of the keydown event handling...
 });
