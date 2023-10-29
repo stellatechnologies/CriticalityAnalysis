@@ -112,6 +112,6 @@ document.addEventListener('keydown', function(event) {
             data.edges.remove(selectedEdges);
         }
 
-        printData(); // Print updated data
+        printData(); // Print updated data 
     }
 });
