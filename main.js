@@ -1,12 +1,12 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow } = require('electron'); 
 const path = require('path');
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 800,
-        height: 600, 
+        height: 600,  
         webPreferences: {
-            nodeIntegration: true,
+            nodeIntegration: true, 
             contextIsolation: false,
             enableRemoteModule: true
         }
@@ -16,11 +16,11 @@ function createWindow() {
 
     
 
-    // Debug Dev Tools enabled
+    // Debug Dev Tools enabled 
     // mainWindow.webContents.openDevTools();
 
 }
-
+ 
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
@@ -28,9 +28,10 @@ app.on('window-all-closed', () => {
         app.quit();
     }
 });
-
+ 
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    if (BrowserWindow.getAllWindows().length === 0) { 
         createWindow();
     }
-});
+}); 
+ 

@@ -7,42 +7,45 @@ import string
 with open('networkData.json') as f:
     data = json.load(f)
 
-# Find all the nodes that have edges pointing to them
-nodes_with_incoming_edges = set(edge['to'] for edge in data['edges'])
+missions = data['Mission']
+mission_hierarchy = data['MissionHierarchy']
 
-# Find all mission nodes that don't have any mission nodes feeding into them
-mission_nodes_without_incoming_edges = [node for node in data['nodes'] if node['id'] not in nodes_with_incoming_edges and node['color'] != "#ffffa8"]
+# Find all missions that have parent missions
+missions_with_parent = set(mh['ChildMission'] for mh in mission_hierarchy)
+
+# Find all missions that don't have any parent missions
+missions_without_parent = [mission for mission in missions if mission['UUID'] not in missions_with_parent]
 
 # Function to generate a random string of characters of length 3-4
 def random_string():
     length = random.randint(3, 4)
     return ''.join(random.choice(string.ascii_letters) for _ in range(length))
 
-# Function to generate a new data node and edges feeding into mission nodes
-def generate_data_node_and_edges(target_nodes):
-    new_id = str(uuid.uuid4()).replace('-', '')
+# Function to generate a new data node and hierarchy entries feeding into mission nodes
+def generate_data_node_and_hierarchy(target_missions):
+    new_uuid = str(uuid.uuid4())
     data_node = {
-        "id": new_id,
-        "label": random_string(),
-        "color": "#ffffa8"
+        "UUID": new_uuid,
+        "Name": random_string(),
+        "Description": ""
     }
-    new_edges = []
-    for node in target_nodes:
-        new_edges.append({
-            "from": new_id,
-            "to": node['id'],
-            "arrows": "to",
-            "id": str(uuid.uuid4())
+    new_hierarchy = []
+    for mission in target_missions:
+        new_hierarchy.append({
+            "ParentMission": new_uuid,
+            "ChildMission": mission['UUID']
         })
-    return data_node, new_edges
+    return data_node, new_hierarchy
 
-# Generate 10 data nodes and their edges
+# Generate 10 data nodes and their hierarchy
 for _ in range(10):
-    # Randomly choose between 1 to 4 mission nodes for the data node to connect to
-    chosen_mission_nodes = random.sample(mission_nodes_without_incoming_edges, random.randint(1, 4))
-    data_node, edges = generate_data_node_and_edges(chosen_mission_nodes)
-    data['nodes'].append(data_node)
-    data['edges'].extend(edges)
+    if missions_without_parent:
+        # Randomly choose between 1 to 4 mission nodes for the data node to connect to
+        num_missions = min(random.randint(1, 4), len(missions_without_parent))
+        chosen_missions = random.sample(missions_without_parent, num_missions)
+        data_node, hierarchy = generate_data_node_and_hierarchy(chosen_missions)
+        data['OperationalData'].append(data_node)
+        data['MissionHierarchy'].extend(hierarchy)
 
 # Print updated data
 print(json.dumps(data, indent=2))

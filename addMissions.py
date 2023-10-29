@@ -6,43 +6,44 @@ import random
 with open('networkData.json') as f:
     data = json.load(f)
 
-# Find all the nodes that have edges pointing to them
-nodes_with_incoming_edges = set(edge['to'] for edge in data['edges'])
+missions = data['Mission']
+mission_hierarchy = data['MissionHierarchy']
 
-# Find all nodes that don't have any nodes feeding into them
-nodes_without_incoming_edges = [node for node in data['nodes'] if node['id'] not in nodes_with_incoming_edges]
+# Find all missions that have parent missions
+missions_with_parent = set(mh['ChildMission'] for mh in mission_hierarchy)
 
-# Function to generate new nodes and edges feeding into a node
-def generate_new_nodes_and_edges(target_node, count):
-    new_nodes = []
-    new_edges = []
-    base_label = target_node['label']
-    # Determine the next label based on the target node's label
-    next_label = int(base_label.split('.')[-1]) + 1
+# Find all missions that don't have any parent missions
+missions_without_parent = [mission for mission in missions if mission['UUID'] not in missions_with_parent]
+
+# Function to generate new missions and mission hierarchy entries feeding into a mission
+def generate_new_missions_and_hierarchy(target_mission, count):
+    new_missions = []
+    new_hierarchy = []
+    base_name = target_mission['Name']
+    # Reset the next name suffix for each mission
+    next_name_suffix = 1
     for i in range(count):
-        label = f"{base_label}.{next_label + i}"
-        new_id = str(uuid.uuid4()).replace('-', '')
-        new_nodes.append({
-            "id": new_id,
-            "label": label,
-            "color": "#a79aff"
+        name = f"{base_name}.{next_name_suffix + i}"
+        new_uuid = str(uuid.uuid4())
+        new_missions.append({
+            "UUID": new_uuid,
+            "Name": name,
+            "Description": ""
         })
-        new_edges.append({
-            "from": new_id,
-            "to": target_node['id'],
-            "arrows": "to",
-            "id": str(uuid.uuid4())
+        new_hierarchy.append({
+            "ParentMission": new_uuid,
+            "ChildMission": target_mission['UUID']
         })
-    return new_nodes, new_edges
+    return new_missions, new_hierarchy
 
-# Generate new nodes and edges
-for node in nodes_without_incoming_edges:
-    # Choose a random number of new nodes to create
-    new_nodes_count = random.choice([0, 2, 3])
-    if new_nodes_count:
-        nodes, edges = generate_new_nodes_and_edges(node, new_nodes_count)
-        data['nodes'].extend(nodes)
-        data['edges'].extend(edges)
+# Generate new missions and mission hierarchy
+for mission in missions_without_parent:
+    # Choose a random number of new missions to create
+    new_missions_count = random.choice([0, 2, 3])
+    if new_missions_count:
+        missions, hierarchy = generate_new_missions_and_hierarchy(mission, new_missions_count)
+        data['Mission'].extend(missions)
+        data['MissionHierarchy'].extend(hierarchy)
 
 # Print updated data
 print(json.dumps(data, indent=2))

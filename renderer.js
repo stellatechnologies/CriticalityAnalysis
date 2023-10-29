@@ -36,7 +36,7 @@ const operationalData = [];
 const missionHierarchy = [];
 const missionOperationalData = [];
 
-// Function to print nodes and edges
+// Function to print nodes and edges 
 function printData() {
     const formattedData = {
         Mission: missionData,
@@ -44,7 +44,7 @@ function printData() {
         MissionHierarchy: missionHierarchy,
         Mission_OperationalData: missionOperationalData
     };
-    document.getElementById('dataOutput').innerText = JSON.stringify(formattedData, null, 2);
+    // document.getElementById('dataOutput').innerText = JSON.stringify(formattedData, null, 2);
 }
 
 // Adding missions
@@ -56,6 +56,13 @@ document.getElementById('addMission').addEventListener('click', () => {
         data.nodes.add({ id: uuid, label: missionName, color: '#a79aff', group: 'Mission' });
         document.getElementById('missionName').value = '';
         printData();
+    } else {
+        // Randomly generate a mission name (random number between 100 and 999) as string
+        const uuid = generateUUID();
+        const missionName = Math.floor(Math.random() * (999 - 100 + 1) + 100).toString();
+        missionData.push({ UUID: uuid, Name: missionName, Description: "" });
+        data.nodes.add({ id: uuid, label: missionName, color: '#a79aff', group: 'Mission' });
+        document.getElementById('missionName').value = '';
     }
 });
 
@@ -67,13 +74,72 @@ document.getElementById('addData').addEventListener('click', () => {
         operationalData.push({ UUID: uuid, Name: dataName, Description: "" });
         data.nodes.add({ id: uuid, label: dataName, color: '#ffffa8', group: 'OperationalData' });
         document.getElementById('dataName').value = '';
-        printData();
+        // printData();
+    } else {
+        // Randomly generate a data name (random string of letters between 3 and 4 characters in length)
+        const uuid = generateUUID();
+        const dataName = Math.random().toString(36).substring(2, 6);
+        operationalData.push({ UUID: uuid, Name: dataName, Description: "" });
+        data.nodes.add({ id: uuid, label: dataName, color: '#ffffa8', group: 'OperationalData' });
+
+        document.getElementById('dataName').value = '';
+
     }
 });
+
+
+
+function highlightConnectedNodes(nodeId, colorMission, colorOperationalData) {
+    // Use a Set to keep track of nodes that have already been processed
+    const processed = new Set();
+    // Use a stack for iterative processing
+    const stack = [nodeId];
+
+    while (stack.length > 0) {
+        const currentNode = stack.pop();
+
+        // Skip if the node has already been processed
+        if (processed.has(currentNode)) {
+            continue;
+        }
+
+        // Mark the node as processed
+        processed.add(currentNode);
+
+        // Find parent missions connected to the current node
+        const parentMissions = missionHierarchy.filter(mh => mh.ChildMission === currentNode);
+        // Add parent missions to the stack for processing
+        parentMissions.forEach(mh => {
+            stack.push(mh.ParentMission);
+        });
+
+        // Find operational data connected to the current node
+        const operationalToMission = missionOperationalData.filter(mo => mo.Mission === currentNode);
+        // Add operational data to the stack for processing
+        operationalToMission.forEach(mo => {
+            stack.push(mo.OperationalData);
+        });
+    }
+
+    // Batch update: highlight all processed nodes at once
+    const updates = Array.from(processed).map(node => {
+        // Check if the node belongs to OperationalData or Mission
+        const color = operationalData.some(od => od.UUID === node) ? colorOperationalData : colorMission;
+        return { id: node, color: color };
+    });
+    data.nodes.update(updates);
+}
+
+
+
+
+
+
 
 // Handle node selection for creating connections
 myNetwork.on("selectNode", function (params) {
     if (params.event.srcEvent.shiftKey) {  // Check if shift key is pressed
+        console.log('shift pressed');
         if (firstSelectedNode === null) {
             firstSelectedNode = params.nodes[0];
         } else if (firstSelectedNode !== params.nodes[0]) {
@@ -101,8 +167,16 @@ myNetwork.on("selectNode", function (params) {
             printData();
         }
     } else {
-        // If shift key is not pressed, clear the selection
+        // If neither shift nor 'i' key is pressed, clear the selection and reset colors
         firstSelectedNode = null;
+        // Reset colors of all nodes to their original colors
+        data.nodes.forEach(node => {
+            let originalColor = '#a79aff'; // Default color for missions
+            if (node.group === 'OperationalData') {
+                originalColor = '#ffffa8'; // Default color for operational data
+            }
+            data.nodes.update({ id: node.id, color: originalColor });
+        });
     }
 });
 
@@ -135,6 +209,9 @@ myNetwork.on("click", function (params) {
         firstSelectedNode = null;
     }
 });
+
+
+
 
 // Import JSON
 document.getElementById('jsonInput').addEventListener('change', (event) => {
@@ -199,6 +276,34 @@ document.getElementById('saveData').addEventListener('click', () => {
 
 
 document.addEventListener('keydown', function (event) {
+    // Check if the 'i' key is pressed
+    if (event.key === 'i' || event.key === 'I') {
+
+        // Get the selected nodes
+        const selectedNodes = myNetwork.getSelectedNodes();
+        
+        // Check if there is a selected node
+        if (selectedNodes.length > 0) {
+            // Get the first selected node
+            const selectedNode = data.nodes.get(selectedNodes[0]);
+
+            // Check if the selected node is a mission
+            if (selectedNode.group === 'Mission') {
+                // Highlight the selected node and all connected missions in light orange and all connected operational data in light green
+                highlightConnectedNodes(selectedNode.id, '#ffcc99', '#ccffcc');
+            }
+        } else {
+            // Reset colors of all nodes to their original colors
+            data.nodes.forEach(node => {
+                let originalColor = '#a79aff'; // Default color for missions
+                if (node.group === 'OperationalData') {
+                    originalColor = '#ffffa8'; // Default color for operational data
+                }
+                data.nodes.update({ id: node.id, color: originalColor });
+            });
+
+        }
+    }
     if (event.key === 'Delete') {
         const selectedNodes = myNetwork.getSelectedNodes();
         const selectedEdges = myNetwork.getSelectedEdges();
@@ -268,6 +373,6 @@ document.addEventListener('keydown', function (event) {
             data.edges.remove(selectedEdges);
         }
 
-        printData(); // Print updated data
+        // printData(); // Print updated data
     }
 });
