@@ -17,7 +17,7 @@ function createWindow() {
     
 
     // Debug Dev Tools enabled
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
 
 }
 
