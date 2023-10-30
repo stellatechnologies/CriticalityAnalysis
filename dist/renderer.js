@@ -124,7 +124,7 @@ function listLeafMissionNodes(nodeId) {
 
     document.getElementById('nodeDetails').innerHTML += opDataPercentagesPretty; 
     
- 
+
 }
 
 // Function to print nodes and edges 

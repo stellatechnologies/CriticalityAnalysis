@@ -1,0 +1,55 @@
+<!doctype html><html><head><title>Node Connection App</title><style>body {
+            font-family: Arial, sans-serif;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-bottom: 1px solid #ccc;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: start;
+            margin-bottom: 20px;
+        }
+
+        #network {
+            flex: 1;
+            min-width: 300px;
+            height: 600px;
+            border: 1px solid lightgray;
+        }
+
+        #infoPanel {
+            flex: 0 1 30%;
+            max-width: 300px;
+            min-width: 200px;
+            background-color: #f7f7f7;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="file"] {
+            padding: 5px;
+            margin-right: 5px;
+        }
+
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        #dataOutput {
+            white-space: pre-wrap;
+            background-color: #f0f0f0;
+            padding: 10px;
+        }</style><script defer="defer" src="bundle.js"></script></head><body><div class="toolbar"><div><input type="file" id="jsonInput" accept=".json"> <button id="saveData">Save Data</button></div></div><div class="container"><div><div class="input-group"><input id="missionName" placeholder="Mission Name"> <button id="addMission">Add Mission</button></div><div class="input-group"><input id="dataName" placeholder="Data Name"> <button id="addData">Add Data</button></div></div></div><div id="network"></div><div id="infoPanel"><h3>Node Details</h3><div id="nodeDetails"></div></div><script src="renderer.js"></script></body></html>
