@@ -222,6 +222,46 @@ function highlightConnectedNodes(nodeId, colorMission, colorOperationalData) {
 }
 
 
+function highlightConnectedNodesBackwards(nodeId, colorMission, colorOperationalData) {
+    // Use a Set to keep track of nodes that have already been processed
+    const processed = new Set();
+    // Use a stack for iterative processing
+    const stack = [nodeId];
+
+    while (stack.length > 0) {
+        const currentNode = stack.pop();
+
+        // Skip if the node has already been processed
+        if (processed.has(currentNode)) {
+            continue;
+        }
+
+        // Mark the node as processed
+        processed.add(currentNode);
+
+        // Find parent missions connected to the current node
+        const childrenMissions = missionHierarchy.filter(mh => mh.ParentMission === currentNode);
+        // Add parent missions to the stack for processing
+        childrenMissions.forEach(mh => {
+            stack.push(mh.ChildMission);
+        });
+
+        // Find operational data connected to the current node
+        const operationalToMission = missionOperationalData.filter(mo => mo.Mission === currentNode);
+        // Add operational data to the stack for processing
+        operationalToMission.forEach(mo => {
+            stack.push(mo.OperationalData);
+        });
+    }
+
+    // Batch update: highlight all processed nodes at once
+    const updates = Array.from(processed).map(node => {
+        // Check if the node belongs to OperationalData or Mission
+        const color = operationalData.some(od => od.UUID === node) ? colorOperationalData : colorMission;
+        return { id: node, color: color };
+    });
+    data.nodes.update(updates);
+}
 
 
 
@@ -233,15 +273,15 @@ myNetwork.on("selectNode", function (params) {
         if (firstSelectedNode === null) {
             firstSelectedNode = params.nodes[0];
         } else if (firstSelectedNode !== params.nodes[0]) {
-            const fromNode = data.nodes.get(firstSelectedNode);
+            const fromNode = data.nodes.get(firstSelectedNode); 
             const toNode = data.nodes.get(params.nodes[0]);
 
             // Ensure relationships are either Mission to Mission or Operational Data to Mission
             if (fromNode.group === 'Mission' && toNode.group === 'Mission') {
                 // Check for existing relationship
-                const existingRelationship = missionHierarchy.find(mh => mh.ParentMission === fromNode.id && mh.ChildMission === toNode.id);
+                const existingRelationship = missionHierarchy.find(mh => mh.ChildMission === fromNode.id && mh.ParentMission === toNode.id);
                 if (!existingRelationship) {
-                    missionHierarchy.push({ ParentMission: fromNode.id, ChildMission: toNode.id });
+                    missionHierarchy.push({ ParentMission: toNode.id, ChildMission: fromNode.id });
                     data.edges.add({ from: firstSelectedNode, to: params.nodes[0], arrows: 'to' });
                 }
             } else if (fromNode.group === 'OperationalData' && toNode.group === 'Mission') {
@@ -336,7 +376,7 @@ document.getElementById('jsonInput').addEventListener('change', (event) => {
         if (importedData.MissionHierarchy) {
             importedData.MissionHierarchy.forEach(item => {
                 missionHierarchy.push(item);
-                data.edges.add({ from: item.ParentMission, to: item.ChildMission, arrows: 'to' });
+                data.edges.add({ from: item.ChildMission, to: item.ParentMission, arrows: 'to' });
             });
         }
 
@@ -374,12 +414,20 @@ document.addEventListener('keydown', function (event) {
                 listLeafMissionNodes(selectedNode.id);
             }
         }
-    } else if (event.key === 'h' || event.key === 'H') { // Use 'h' key for highlighting
+    } else if (event.key === 'h' || event.key === 'H') { // Use 'h' key for highlighting forwards
         const selectedNodes = myNetwork.getSelectedNodes();
         if (selectedNodes.length > 0) {
             const selectedNode = data.nodes.get(selectedNodes[0]);
             if (selectedNode.group === 'Mission') {
                 highlightConnectedNodes(selectedNode.id, '#ffcc99', '#ccffcc');
+            }
+        }
+    } else if (event.key === 'b' || event.key === 'B') { // Use 'h' key for highlighting
+        const selectedNodes = myNetwork.getSelectedNodes();
+        if (selectedNodes.length > 0) {
+            const selectedNode = data.nodes.get(selectedNodes[0]);
+            if (selectedNode.group === 'Mission') {
+                highlightConnectedNodesBackwards(selectedNode.id, '#ffcc99', '#ccffcc');
             }
         }
     }

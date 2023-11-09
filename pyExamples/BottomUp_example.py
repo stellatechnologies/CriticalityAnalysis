@@ -34,12 +34,12 @@ M.add_edges_from(mission_hierarchy)
 
 # Function to find leaf mission nodes
 def find_leaf_mission_nodes(graph):
-    return [n for n in graph.nodes() if graph.out_degree(n) == 0]
+    return [n for n in graph.nodes() if graph.in_degree(n) == 0]
 
 # Determine traversal path
 try:
     traversal_path = list(nx.topological_sort(M))
-    traversal_path.reverse()  # Reverse the traversal path
+    # traversal_path.reverse()  # Reverse the traversal path
     print("Traversal Path: ", traversal_path)
 except nx.NetworkXUnfeasible:
     print("Graph has a cycle, so a topological sort is not possible.")
@@ -62,7 +62,7 @@ for m_uuid in traversal_path:
         for d_uuid in connected_data_nodes:
             matrix[m_index][data_to_index[d_uuid]] = 100
     else:
-        children = [n for n in M.successors(m_uuid) if n in missions]
+        children = [n for n in M.predecessors(m_uuid) if n in missions]
         print(f"Non-Leaf Node. Children: {[missions[c]['label'] for c in children]}")
         
         children_rows = [matrix[mission_to_index[c]] for c in children]

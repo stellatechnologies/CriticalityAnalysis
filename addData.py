@@ -10,11 +10,17 @@ with open('networkData.json') as f:
 missions = data['Mission']
 mission_hierarchy = data['MissionHierarchy']
 
-# Find all missions that have parent missions
-missions_with_parent = set(mh['ChildMission'] for mh in mission_hierarchy)
+# Find all missions that have Child missions
+mission_with_children = set(mh['ParentMission'] for mh in mission_hierarchy)
 
-# Find all missions that don't have any parent missions
-missions_without_parent = [mission for mission in missions if mission['UUID'] not in missions_with_parent]
+# Find all missions that don't have any Child missions
+missions_without_children = [mission for mission in missions if mission['UUID'] not in mission_with_children]
+
+    
+    
+    
+    
+    
 
 # Function to generate a random string of characters of length 3-4
 def random_string():
@@ -32,17 +38,17 @@ def generate_data_node_and_hierarchy(target_missions):
     new_hierarchy = []
     for mission in target_missions:
         new_hierarchy.append({
-            "ParentMission": new_uuid,
-            "ChildMission": mission['UUID']
+            "Mission": mission['UUID'],
+            "OperationalData": new_uuid
         })
     return data_node, new_hierarchy
 
 # Generate 10 data nodes and their hierarchy
 for _ in range(10):
-    if missions_without_parent:
+    if missions_without_children:
         # Randomly choose between 1 to 4 mission nodes for the data node to connect to
-        num_missions = min(random.randint(1, 4), len(missions_without_parent))
-        chosen_missions = random.sample(missions_without_parent, num_missions)
+        num_missions = min(random.randint(1, 4), len(missions_without_children))
+        chosen_missions = random.sample(missions_without_children, num_missions)
         data_node, hierarchy = generate_data_node_and_hierarchy(chosen_missions)
         data['OperationalData'].append(data_node)
         data['Mission_OperationalData'].extend(hierarchy)

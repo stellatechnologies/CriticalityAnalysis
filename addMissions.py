@@ -9,11 +9,12 @@ with open('networkData.json') as f:
 missions = data['Mission']
 mission_hierarchy = data['MissionHierarchy']
 
-# Find all missions that have parent missions
-missions_with_parent = set(mh['ChildMission'] for mh in mission_hierarchy)
+# Find all missions that have Child missions
+mission_with_children = set(mh['ParentMission'] for mh in mission_hierarchy)
 
-# Find all missions that don't have any parent missions
-missions_without_parent = [mission for mission in missions if mission['UUID'] not in missions_with_parent]
+# Find all missions that don't have any Child missions
+missions_without_children = [mission for mission in missions if mission['UUID'] not in mission_with_children]
+
 
 # Function to generate new missions and mission hierarchy entries feeding into a mission
 def generate_new_missions_and_hierarchy(target_mission, count):
@@ -31,13 +32,13 @@ def generate_new_missions_and_hierarchy(target_mission, count):
             "Description": ""
         })
         new_hierarchy.append({
-            "ParentMission": new_uuid,
-            "ChildMission": target_mission['UUID']
+            "ParentMission": target_mission['UUID'],
+            "ChildMission": new_uuid
         })
     return new_missions, new_hierarchy
 
 # Generate new missions and mission hierarchy
-for mission in missions_without_parent:
+for mission in missions_without_children:
     # Choose a random number of new missions to create
     new_missions_count = random.choice([0, 2, 3])
     if new_missions_count:
