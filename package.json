@@ -6,13 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon --watch main.js --watch renderer.js --watch index.html --exec electron .",
-    "build": "webpack"
+    "build": "webpack",
+    "package": "electron-packager . --overwrite --platform=win32 --arch=x64 --icon=assets/icon.ico --prune=true --out=release-builds"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "electron": "^27.0.2",
+    "electron-packager": "^17.1.2",
+    "eslint": "^8.56.0",
+    "eslint-plugin-security": "^2.1.0",
     "html-webpack-plugin": "^5.5.3",
     "nodemon": "^3.0.1",
     "webpack": "^5.89.0",

@@ -61,7 +61,7 @@ function listLeafMissionNodes(nodeId) {
         return missionDetail ? missionDetail.Name : "";
     });
 
-    
+
 
     // Get the Operational Data connected to the leaf nodes
     const leafOperationalData = [];
@@ -122,9 +122,9 @@ function listLeafMissionNodes(nodeId) {
         opDataPercentagesPretty += `<p>${key}: ${item[key].toFixed(2)}%</p>`;
     });
 
-    document.getElementById('nodeDetails').innerHTML += opDataPercentagesPretty; 
-    
- 
+    document.getElementById('nodeDetails').innerHTML += opDataPercentagesPretty;
+
+
 }
 
 // Function to print nodes and edges 
@@ -273,7 +273,7 @@ myNetwork.on("selectNode", function (params) {
         if (firstSelectedNode === null) {
             firstSelectedNode = params.nodes[0];
         } else if (firstSelectedNode !== params.nodes[0]) {
-            const fromNode = data.nodes.get(firstSelectedNode); 
+            const fromNode = data.nodes.get(firstSelectedNode);
             const toNode = data.nodes.get(params.nodes[0]);
 
             // Ensure relationships are either Mission to Mission or Operational Data to Mission
@@ -401,7 +401,40 @@ document.getElementById('saveData').addEventListener('click', () => {
         MissionHierarchy: missionHierarchy,
         Mission_OperationalData: missionOperationalData
     };
+
+    // Save data to a JSON file
     fs.writeFileSync('networkData.json', JSON.stringify(formattedData, null, 2));
+
+});
+
+
+document.getElementById('bottomUpButton').addEventListener('click', () => {
+    const formattedData = {
+        Mission: missionData,
+        OperationalData: operationalData,
+        MissionHierarchy: missionHierarchy,
+        Mission_OperationalData: missionOperationalData
+    };
+
+    // Send data to the Flask server
+    const url = 'http://127.0.0.1:6868/bottom_up_process'; // Ensure this matches your Flask route
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formattedData)
+    };
+
+    fetch(url, options)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok ' + res.statusText);
+            }
+            return res.json();
+        })
+        .then(res => console.log(res))
+        .catch(err => console.error('error:' + err));
 });
 
 

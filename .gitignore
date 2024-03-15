@@ -1,2 +1,7 @@
 # Ignore node_modules folder
 node_modules
+
+# Release build folder
+dist
+release-builds
+venv
