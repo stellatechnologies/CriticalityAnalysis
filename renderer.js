@@ -438,6 +438,68 @@ document.getElementById('bottomUpButton').addEventListener('click', () => {
 });
 
 
+document.getElementById('bfsButton').addEventListener('click', () => {
+    const formattedData = {
+        Mission: missionData,
+        OperationalData: operationalData,
+        MissionHierarchy: missionHierarchy,
+        Mission_OperationalData: missionOperationalData
+    };
+
+    // Send data to the Flask server
+    const url = 'http://127.0.0.1:6868/bfs_dfs_analysis';
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formattedData)
+    };
+
+    fetch(url, options)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok ' + res.statusText);
+            }
+            return res.json();
+        })
+        .then(res => console.log(res))
+        .catch(err => console.error('error:' + err));
+});
+
+
+
+document.getElementById('pageRankButton').addEventListener('click', () => {
+    const formattedData = {
+        Mission: missionData,
+        OperationalData: operationalData,
+        MissionHierarchy: missionHierarchy,
+        Mission_OperationalData: missionOperationalData
+    };
+
+    // Send data to the Flask server
+    const url = 'http://127.0.0.1:6868/pagerank_analysis';
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formattedData)
+    };
+
+    fetch(url, options)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error('Network response was not ok ' + res.statusText);
+            }
+            return res.json();
+        })
+        .then(res => console.log(res))
+        .catch(err => console.error('error:' + err));
+});
+
+
+
 document.addEventListener('keydown', function (event) {
     if (event.key === 'i' || event.key === 'I') {
         const selectedNodes = myNetwork.getSelectedNodes();
