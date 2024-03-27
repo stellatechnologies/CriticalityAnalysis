@@ -185,11 +185,54 @@ def bfs_dfs_analysis():
     return jsonify(response)
 
     
+    
+    
+    
+# Function to find the shortest path
+def find_shortest_path(graph, start, end):
+    visited = set()
+    queue = deque([[start]])
+    
+    while queue:
+        path = queue.popleft()
+        node = path[-1]
+        
+        if node == end:
+            return path
+        
+        if node not in visited:
+            visited.add(node)
+            neighbors = graph.successors(node)
+            
+            for neighbor in neighbors:
+                new_path = list(path)
+                new_path.append(neighbor)
+                queue.append(new_path)
+    
+    return []
+
+# Function to adjust score for path length
+def adjust_score_for_path_length(score, path_length):
+    return score / path_length if path_length > 0 else 0
+
+# Function to get all dependencies
+def get_all_dependencies(graph, node_id):
+    direct_dependencies = list(graph.predecessors(node_id))
+    # print(f'Direct Dependencies: {direct_dependencies}')
+    all_dependencies = set(direct_dependencies)
+    # print(f'All Dependencies: {all_dependencies}')
+    
+    for dep_node_id in direct_dependencies:
+        all_dependencies.update(get_all_dependencies(graph, dep_node_id))
+    
+    return list(all_dependencies)
 
 
 @app.route('/pagerank_analysis', methods=['POST'])
 def pagerank_analysis():
     data = request.json
+    
+    print(f'Data: {data}')
 
     # Parse missions and operational data
     missions = {m['UUID']: {'label': m['Name']} for m in data['Mission']}
@@ -207,47 +250,33 @@ def pagerank_analysis():
     G.add_nodes_from(full_nodes.keys())
     G.add_edges_from(mission_hierarchy + mission_data_relations)
 
-    # Calculate PageRank
+    # Calculate PageRank for the entire graph
     page_rank = nx.pagerank(G, alpha=0.85)
-
-    # Adjust PageRank scores for operational data based on path lengths
-    adjusted_scores = {}
-    for node_id in operational_data:
-        # Assuming single root mission; adjust as needed for multiple roots
-        root_mission_id = next(iter(missions.keys()), None)
-        if root_mission_id:
-            if nx.has_path(G, source=root_mission_id, target=node_id):
-                path = nx.shortest_path(G, source=root_mission_id, target=node_id)
-                path_length = len(path)
-                adjusted_score = page_rank[node_id] / path_length if path_length > 0 else 0
-                adjusted_scores[node_id] = adjusted_score
-            else:
-                # Handle the case where no path exists. 
-                # For example, you can set the adjusted score to 0 or some other default value.
-                adjusted_scores[node_id] = 0
-
-    # Normalize the adjusted scores
-    total_adjusted_score = sum(adjusted_scores.values())
-    # Normalize the adjusted scores
-    if total_adjusted_score > 0:
-        normalized_scores = {node_id: score / total_adjusted_score for node_id, score in adjusted_scores.items()}
-    else:
-        # Handle the case where total_adjusted_score is 0
-        # One approach could be to assign a uniform score to all nodes, or simply skip normalization
-        normalized_scores = adjusted_scores  # Or any other default handling as per your needs
-
-    # Prepare response with labels
-    scores_with_labels = {operational_data[node_id]['label']: score for node_id, score in normalized_scores.items()}
-
-    response = {
-        "message": "PageRank analysis completed",
-        "pagerank_scores": scores_with_labels
-    }
     
-    print(response)
+    print(f'PageRank: {page_rank}')
 
-    return jsonify(response)
+    # Find the root mission by identifying which mission is never a child in the hierarchy
+    child_missions = {hierarchy['ChildMission'] for hierarchy in data['MissionHierarchy']}
+    root_mission_id = next((mission['UUID'] for mission in data['Mission'] if mission['UUID'] not in child_missions), None)
 
+    if not root_mission_id:
+        return jsonify({"message": "No root mission found."})
+    else:
+        print(f'Root Mission ID: {root_mission_id}')
+
+
+    dependencies = get_all_dependencies(G, root_mission_id)
+    unique_dependencies = set(dependencies)
+    
+    print(f'Dependencies: {dependencies}')
+    print(f'Unique Dependencies: {unique_dependencies}')
+    
+    
+    
+    
+    
+    
+    return jsonify({"message": "PageRank analysis completed"})
 
 if __name__ == '__main__':
     app.run(debug=True, port = 6868)
