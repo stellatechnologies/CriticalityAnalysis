@@ -3,12 +3,15 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
+from collections import deque
 
 app = Flask(__name__)
 
 @app.route('/bottom_up_process', methods=['POST'])
 def bottom_up_process():
     data = request.json
+    
+    print(f'DATA: {data}')
 
     # Parse missions and operational data
     missions = {m['UUID']: {'label': m['Name']} for m in data['Mission']}
@@ -232,51 +235,98 @@ def get_all_dependencies(graph, node_id):
 def pagerank_analysis():
     data = request.json
     
-    print(f'Data: {data}')
-
-    # Parse missions and operational data
-    missions = {m['UUID']: {'label': m['Name']} for m in data['Mission']}
-    operational_data = {d['UUID']: {'label': d['Name'], 'shape': 'box'} for d in data['OperationalData']}
-
-    # Combine mission and data nodes
-    full_nodes = {**missions, **operational_data}
-
-    # Parse mission hierarchy and mission-operational data relationships
-    mission_hierarchy = [(rel['ChildMission'], rel['ParentMission']) for rel in data['MissionHierarchy']]
-    mission_data_relations = [(rel['OperationalData'], rel['Mission']) for rel in data['Mission_OperationalData']]
-
-    # Create and populate graph
+    # Create a directed graph
     G = nx.DiGraph()
-    G.add_nodes_from(full_nodes.keys())
-    G.add_edges_from(mission_hierarchy + mission_data_relations)
 
-    # Calculate PageRank for the entire graph
+    # Parse missions and operational data into nodes, tag them appropriately
+    missions = [(mission['UUID'], {'label': mission['Name'], 'type': 'Mission', 'color': 'red'}) for mission in data['Mission']]
+    operational_data = [(op_data['UUID'], {'label': op_data['Name'], 'type': 'OperationalData', 'color': 'grey'}) for op_data in data['OperationalData']]
+    G.add_nodes_from(missions + operational_data)
+
+    # Parse mission hierarchy and operational data links into edges
+    mission_hierarchy_edges = [(hierarchy['ParentMission'], hierarchy['ChildMission']) for hierarchy in data['MissionHierarchy']]
+    mission_operational_data_edges = [(association['Mission'], association['OperationalData']) for association in data['Mission_OperationalData']]
+    G.add_edges_from(mission_hierarchy_edges + mission_operational_data_edges)
+
+    # Calculate PageRank
     page_rank = nx.pagerank(G, alpha=0.85)
-    
-    print(f'PageRank: {page_rank}')
 
-    # Find the root mission by identifying which mission is never a child in the hierarchy
-    child_missions = {hierarchy['ChildMission'] for hierarchy in data['MissionHierarchy']}
-    root_mission_id = next((mission['UUID'] for mission in data['Mission'] if mission['UUID'] not in child_missions), None)
+    # Update nodes with PageRank
+    for n in G.nodes:
+        G.nodes[n]['pageRank'] = page_rank[n]
 
-    if not root_mission_id:
-        return jsonify({"message": "No root mission found."})
-    else:
-        print(f'Root Mission ID: {root_mission_id}')
+    # Function to find the shortest path
+    def find_shortest_path(graph, start, end):
+        visited = set()
+        queue = deque([[start]])
+        
+        while queue:
+            path = queue.popleft()
+            node = path[-1]
+            
+            if node == end:
+                return path
+            
+            if node not in visited:
+                visited.add(node)
+                neighbors = graph.successors(node)
+                
+                for neighbor in neighbors:
+                    new_path = list(path)
+                    new_path.append(neighbor)
+                    queue.append(new_path)
+        
+        return []
 
+    # Function to adjust score for path length
+    def adjust_score_for_path_length(score, path_length):
+        return score / path_length if path_length > 0 else 0
 
-    dependencies = get_all_dependencies(G, root_mission_id)
+    # Function to get all dependencies
+    def get_all_dependencies(graph, node_id):
+        direct_dependencies = list(graph.successors(node_id))
+        all_dependencies = set(direct_dependencies)
+        
+        for dep_node_id in direct_dependencies:
+            all_dependencies.update(get_all_dependencies(graph, dep_node_id))
+        
+        return list(all_dependencies)
+
+    # Identify the root mission (mission of interest)
+    all_child_missions = set(hierarchy['ChildMission'] for hierarchy in data['MissionHierarchy'])
+    root_mission_uuid = next(mission['UUID'] for mission in data['Mission'] if mission['UUID'] not in all_child_missions)
+
+    # Calculate adjusted scores for data nodes in the dependencies
+    dependencies = get_all_dependencies(G, root_mission_uuid)
     unique_dependencies = set(dependencies)
+
+    adjusted_scores = {}
+    total_adjusted_score = 0
+
+    # Filter nodes based on whether they come from the OperationalData list
+    for node_id in unique_dependencies:
+        if G.nodes[node_id].get('type') == 'OperationalData':
+            path_length = len(find_shortest_path(G, root_mission_uuid, node_id))
+            adjusted_score = adjust_score_for_path_length(G.nodes[node_id]['pageRank'], path_length)
+            adjusted_scores[node_id] = adjusted_score
+            total_adjusted_score += adjusted_score
+
+    # Normalize the adjusted scores to lie in [0,1]
+    for node_id in adjusted_scores:
+        adjusted_scores[node_id] /= total_adjusted_score
+
+    # Print the normalized importance scores for data types
+    print("Importance Scores for Root Mission:")
+    for node_id, score in adjusted_scores.items():
+        print(f"{G.nodes[node_id]['label']}: {score:.4f}")
+        
+        
+    response = {
+        "message": "PageRank analysis completed",
+        "importance_scores": adjusted_scores
+    }
     
-    print(f'Dependencies: {dependencies}')
-    print(f'Unique Dependencies: {unique_dependencies}')
-    
-    
-    
-    
-    
-    
-    return jsonify({"message": "PageRank analysis completed"})
+    return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug=True, port = 6868)
