@@ -1,0 +1,242 @@
+{
+    "SVZ": {
+        "depth": 0,
+        "breadth": 2,
+        "affected_missions": [
+            "5360479e-7790-46b8-b3ad-b8dd78460c01",
+            "ed9c1bb8-b23d-4f61-bec0-6260b219a920"
+        ],
+        "paths": {
+            "5360479e-7790-46b8-b3ad-b8dd78460c01": [
+                "83333241-980c-4d78-8140-1d65ee2840ca",
+                "5360479e-7790-46b8-b3ad-b8dd78460c01"
+            ],
+            "ed9c1bb8-b23d-4f61-bec0-6260b219a920": [
+                "83333241-980c-4d78-8140-1d65ee2840ca",
+                "ed9c1bb8-b23d-4f61-bec0-6260b219a920"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 3.0,
+        "normalized_score": 2.0
+    },
+    "gVk": {
+        "depth": 0,
+        "breadth": 1,
+        "affected_missions": [
+            "8e73-7517-412c-8404-2f081e"
+        ],
+        "paths": {
+            "8e73-7517-412c-8404-2f081e": [
+                "ec6a0627-182c-4ef4-b02b-17a64668cf74",
+                "8e73-7517-412c-8404-2f081e"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 2.0,
+        "normalized_score": 1.0
+    },
+    "JuV": {
+        "depth": 0,
+        "breadth": 4,
+        "affected_missions": [
+            "ed9c1bb8-b23d-4f61-bec0-6260b219a920",
+            "b7a182a8-e061-4fd3-989d-92ce74a941bb",
+            "5360479e-7790-46b8-b3ad-b8dd78460c01",
+            "4925-2699-41d5-af7a-4b64d1"
+        ],
+        "paths": {
+            "ed9c1bb8-b23d-4f61-bec0-6260b219a920": [
+                "bd2405cb-78e1-4f93-88f8-eecc40fce862",
+                "ed9c1bb8-b23d-4f61-bec0-6260b219a920"
+            ],
+            "b7a182a8-e061-4fd3-989d-92ce74a941bb": [
+                "bd2405cb-78e1-4f93-88f8-eecc40fce862",
+                "b7a182a8-e061-4fd3-989d-92ce74a941bb"
+            ],
+            "5360479e-7790-46b8-b3ad-b8dd78460c01": [
+                "bd2405cb-78e1-4f93-88f8-eecc40fce862",
+                "5360479e-7790-46b8-b3ad-b8dd78460c01"
+            ],
+            "4925-2699-41d5-af7a-4b64d1": [
+                "bd2405cb-78e1-4f93-88f8-eecc40fce862",
+                "4925-2699-41d5-af7a-4b64d1"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 5.0,
+        "normalized_score": 4.0
+    },
+    "mjH": {
+        "depth": 0,
+        "breadth": 1,
+        "affected_missions": [
+            "4e77-a7cc-4999-8077-ee691b"
+        ],
+        "paths": {
+            "4e77-a7cc-4999-8077-ee691b": [
+                "ce76175e-f388-4f0f-b833-72ae4a8a29e3",
+                "4e77-a7cc-4999-8077-ee691b"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 2.0,
+        "normalized_score": 1.0
+    },
+    "XZwO": {
+        "depth": 0,
+        "breadth": 2,
+        "affected_missions": [
+            "4925-2699-41d5-af7a-4b64d1",
+            "b7a182a8-e061-4fd3-989d-92ce74a941bb"
+        ],
+        "paths": {
+            "4925-2699-41d5-af7a-4b64d1": [
+                "45cf2d39-59e1-4a92-b5f5-5f43e594c8f4",
+                "4925-2699-41d5-af7a-4b64d1"
+            ],
+            "b7a182a8-e061-4fd3-989d-92ce74a941bb": [
+                "45cf2d39-59e1-4a92-b5f5-5f43e594c8f4",
+                "b7a182a8-e061-4fd3-989d-92ce74a941bb"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 3.0,
+        "normalized_score": 2.0
+    },
+    "Rsle": {
+        "depth": 0,
+        "breadth": 4,
+        "affected_missions": [
+            "4925-2699-41d5-af7a-4b64d1",
+            "b58cd2b7-b6ad-4e76-b2f8-9eb11459cfd7",
+            "4e77-a7cc-4999-8077-ee691b",
+            "5360479e-7790-46b8-b3ad-b8dd78460c01"
+        ],
+        "paths": {
+            "4925-2699-41d5-af7a-4b64d1": [
+                "e1417d65-c52a-4165-a228-93444e6f5def",
+                "4925-2699-41d5-af7a-4b64d1"
+            ],
+            "b58cd2b7-b6ad-4e76-b2f8-9eb11459cfd7": [
+                "e1417d65-c52a-4165-a228-93444e6f5def",
+                "b58cd2b7-b6ad-4e76-b2f8-9eb11459cfd7"
+            ],
+            "4e77-a7cc-4999-8077-ee691b": [
+                "e1417d65-c52a-4165-a228-93444e6f5def",
+                "4e77-a7cc-4999-8077-ee691b"
+            ],
+            "5360479e-7790-46b8-b3ad-b8dd78460c01": [
+                "e1417d65-c52a-4165-a228-93444e6f5def",
+                "5360479e-7790-46b8-b3ad-b8dd78460c01"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 5.0,
+        "normalized_score": 4.0
+    },
+    "LTF": {
+        "depth": 0,
+        "breadth": 1,
+        "affected_missions": [
+            "b7a182a8-e061-4fd3-989d-92ce74a941bb"
+        ],
+        "paths": {
+            "b7a182a8-e061-4fd3-989d-92ce74a941bb": [
+                "e7028d62-91ad-403f-a651-5c0afd565874",
+                "b7a182a8-e061-4fd3-989d-92ce74a941bb"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 2.0,
+        "normalized_score": 1.0
+    },
+    "Htjn": {
+        "depth": 0,
+        "breadth": 1,
+        "affected_missions": [
+            "4e77-a7cc-4999-8077-ee691b"
+        ],
+        "paths": {
+            "4e77-a7cc-4999-8077-ee691b": [
+                "55299d6f-63f4-4280-9a85-9039daa226e0",
+                "4e77-a7cc-4999-8077-ee691b"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 2.0,
+        "normalized_score": 1.0
+    },
+    "vnx": {
+        "depth": 0,
+        "breadth": 1,
+        "affected_missions": [
+            "5360479e-7790-46b8-b3ad-b8dd78460c01"
+        ],
+        "paths": {
+            "5360479e-7790-46b8-b3ad-b8dd78460c01": [
+                "875271a3-064a-45f8-9cd5-382466c1754d",
+                "5360479e-7790-46b8-b3ad-b8dd78460c01"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 2.0,
+        "normalized_score": 1.0
+    },
+    "tONb": {
+        "depth": 0,
+        "breadth": 1,
+        "affected_missions": [
+            "4925-2699-41d5-af7a-4b64d1"
+        ],
+        "paths": {
+            "4925-2699-41d5-af7a-4b64d1": [
+                "16232513-a830-4b4c-b022-fa15022bdd03",
+                "4925-2699-41d5-af7a-4b64d1"
+            ]
+        },
+        "centrality_measures": {
+            "betweenness": 0.0,
+            "closeness": 0.0,
+            "eigenvector": 1.2362061416693558e-10
+        },
+        "non_normalized_score": 2.0,
+        "normalized_score": 1.0
+    }
+}
