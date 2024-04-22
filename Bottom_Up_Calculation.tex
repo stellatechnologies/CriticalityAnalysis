@@ -1,0 +1,33 @@
+\pdfminorversion=4
+\documentclass[]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,latexsym,amsmath}
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\begin{document}
+
+\begin{itemize}
+  \item Let \( O_i \) represent the i-th operational data.
+  \item Let \( M_j \) represent the j-th mission.
+  \item Let \( C(M_j) \) represent the set of child missions of mission \( M_j \).
+  \item Let \( u(O_i, M_j) \) represent the utilization score of operational data \( O_i \) for mission \( M_j \), where the score is 1 if \( O_i \) is used by \( M_j \), and 0 if not.
+\end{itemize}
+
+For leaf missions, the utilization score is directly assigned:
+
+\[ u(O_i, M_j) = 1 \quad \text{if operational data } O_i \text{ is used by leaf mission } M_j \]
+
+For non-leaf missions, the utilization score for each operational data is the average of the scores of that data across all child missions:
+
+\[ u(O_i, M_j) = \frac{1}{|C(M_j)|} \sum_{k \in C(M_j)} u(O_i, M_k) \]
+
+Where \( |C(M_j)| \) is the number of child missions of \( M_j \).
+
+The final score of operational data \( O_i \) for mission \( M_j \) is then normalized if necessary, to ensure that the score is within a specific range (e.g., 0 to 100\%). The normalization can be represented as:
+
+\[ S(O_i, M_j) = \left( \frac{u(O_i, M_j) - \min(u)}{\max(u) - \min(u)} \right) \times 100 \% \]
+
+where \( S(O_i, M_j) \) is the final normalized score of operational data \( O_i \) for mission \( M_j \), and \( \min(u) \) and \( \max(u) \) are the minimum and maximum utilization scores across all operational data and missions before normalization.
+
+\end{document}
