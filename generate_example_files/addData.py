@@ -43,7 +43,7 @@ def generate_data_node_and_hierarchy(target_missions):
         })
     return data_node, new_hierarchy
 
-# Generate 10 data nodes and their hierarchy
+# Generate 100 data nodes and their hierarchy
 for _ in range(10):
     if missions_without_children:
         # Randomly choose between 1 to 4 mission nodes for the data node to connect to
@@ -53,8 +53,9 @@ for _ in range(10):
         data['OperationalData'].append(data_node)
         data['Mission_OperationalData'].extend(hierarchy)
 
-# Print updated data
-print(json.dumps(data, indent=2))
+# Print The number of data and the number of missions
+print(f"Number of missions: {len(data['Mission'])}")
+print(f"Number of data nodes: {len(data['OperationalData'])}")
 
 # Write updated data to file
 with open('networkData.json', 'w') as f:

@@ -5,3 +5,7 @@ node_modules
 dist
 release-builds
 venv
+
+# Ignore NetworkData.json regardless of location
+NetworkData.json
+networkData.json

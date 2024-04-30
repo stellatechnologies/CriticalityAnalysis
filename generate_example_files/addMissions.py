@@ -46,8 +46,8 @@ for mission in missions_without_children:
         data['Mission'].extend(missions)
         data['MissionHierarchy'].extend(hierarchy)
 
-# Print updated data
-print(json.dumps(data, indent=2))
+# Print the number of missions
+print(f"Number of missions: {len(data['Mission'])}")
 
 # Write updated data to file
 with open('networkData.json', 'w') as f:
