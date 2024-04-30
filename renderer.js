@@ -37,108 +37,7 @@ const missionHierarchy = [];
 const missionOperationalData = [];
 
 
-// Function to find all leaf mission nodes starting from a given node
-function listLeafMissionNodes(nodeId) {
-    const leafNodes = [];
-    const missionNodeIds = missionHierarchy.map(mh => mh.ParentMission);
-
-    const traverse = (currentNodeId) => {
-        const childMissions = missionHierarchy.filter(mh => mh.ChildMission === currentNodeId).map(mh => mh.ParentMission);
-
-        if (!childMissions.some(childId => missionNodeIds.includes(childId))) {
-            leafNodes.push(currentNodeId);
-        } else {
-            childMissions.forEach(traverse);
-        }
-    };
-
-    traverse(nodeId);
-
-    // console.log('Leaf Nodes:', leafNodes); 
-
-    const leafNodeDetails = leafNodes.map(nodeId => {
-        const missionDetail = missionData.find(m => m.UUID === nodeId);
-        return missionDetail ? missionDetail.Name : "";
-    });
-
-
-
-    // Get the Operational Data connected to the leaf nodes
-    const leafOperationalData = [];
-    leafNodes.forEach(nodeId => {
-        const operationalDataForMission = missionOperationalData.filter(mo => mo.Mission === nodeId).map(mo => mo.OperationalData);
-        leafOperationalData.push(...operationalDataForMission);
-    });
-
-    // Get the Operational Data details
-    const leafOperationalDataDetails = leafOperationalData.map(nodeId => {
-        const operationalDetail = operationalData.find(d => d.UUID === nodeId);
-        return operationalDetail ? operationalDetail.Name : "";
-    });
-
-    // Get the percentage for each operational data for the number of leaf nodes
-    let opDataPercentages = {};
-    leafOperationalData.forEach(nodeId => {
-        if (opDataPercentages[nodeId]) {
-            opDataPercentages[nodeId] += 1;
-        } else {
-            opDataPercentages[nodeId] = 1;
-        }
-    }
-    );
-
-    console.log(opDataPercentages);
-
-
-
-    // Calculate the percentage of operational data for the number of leaf nodes  opDataPercentages[nodeId] / leafNodes.length
-    const leafOperationalDataPercentage = Object.keys(opDataPercentages).map(key => {
-        return { [key]: (opDataPercentages[key] / leafNodes.length) * 100 };
-    });
-
-    // console.log(leafOperationalDataPercentage);
-
-
-    // Replace the operational data UUIDs with the operational data names
-    const leafOperationalDataPercentageDetails = leafOperationalDataPercentage.map(item => {
-        const key = Object.keys(item)[0];
-        const operationalDetail = operationalData.find(d => d.UUID === key);
-        return operationalDetail ? { [operationalDetail.Name]: item[key] } : "";
-    });
-
-    console.log(leafOperationalDataPercentageDetails);
-
-
-
-
-    // Show the leaf node details in the node details section
-    document.getElementById('nodeDetails').innerHTML = `<p>Leaf Missions: ${leafNodes.length}</p>
-                                                            <p>Operational Data: ${leafOperationalData.length}</p>`;
-
-    // Print the Operational Data percentages in the node details section in a pretty format
-    let opDataPercentagesPretty = "";
-    leafOperationalDataPercentageDetails.forEach(item => {
-        const key = Object.keys(item)[0];
-        opDataPercentagesPretty += `<p>${key}: ${item[key].toFixed(2)}%</p>`;
-    });
-
-    document.getElementById('nodeDetails').innerHTML += opDataPercentagesPretty;
-
-
-}
-
-// Function to print nodes and edges 
-function printData() {
-    const formattedData = {
-        Mission: missionData,
-        OperationalData: operationalData,
-        MissionHierarchy: missionHierarchy,
-        Mission_OperationalData: missionOperationalData
-    };
-    // document.getElementById('dataOutput').innerText = JSON.stringify(formattedData, null, 2);
-}
-
-// Adding missions
+// Adding missions to the network
 document.getElementById('addMission').addEventListener('click', () => {
     const missionName = document.getElementById('missionName').value;
     if (missionName) {
@@ -146,7 +45,6 @@ document.getElementById('addMission').addEventListener('click', () => {
         missionData.push({ UUID: uuid, Name: missionName, Description: "" });
         data.nodes.add({ id: uuid, label: missionName, color: '#a79aff', group: 'Mission' });
         document.getElementById('missionName').value = '';
-        printData();
     } else {
         // Randomly generate a mission name (random number between 100 and 999) as string
         const uuid = generateUUID();
@@ -165,106 +63,15 @@ document.getElementById('addData').addEventListener('click', () => {
         operationalData.push({ UUID: uuid, Name: dataName, Description: "" });
         data.nodes.add({ id: uuid, label: dataName, color: '#ffffa8', group: 'OperationalData' });
         document.getElementById('dataName').value = '';
-        // printData();
     } else {
         // Randomly generate a data name (random string of letters between 3 and 4 characters in length)
         const uuid = generateUUID();
         const dataName = Math.random().toString(36).substring(2, 6);
         operationalData.push({ UUID: uuid, Name: dataName, Description: "" });
         data.nodes.add({ id: uuid, label: dataName, color: '#ffffa8', group: 'OperationalData' });
-
         document.getElementById('dataName').value = '';
-
     }
 });
-
-
-
-function highlightConnectedNodes(nodeId, colorMission, colorOperationalData) {
-    // Use a Set to keep track of nodes that have already been processed
-    const processed = new Set();
-    // Use a stack for iterative processing
-    const stack = [nodeId];
-
-    while (stack.length > 0) {
-        const currentNode = stack.pop();
-
-        // Skip if the node has already been processed
-        if (processed.has(currentNode)) {
-            continue;
-        }
-
-        // Mark the node as processed
-        processed.add(currentNode);
-
-        // Find parent missions connected to the current node
-        const parentMissions = missionHierarchy.filter(mh => mh.ChildMission === currentNode);
-        // Add parent missions to the stack for processing
-        parentMissions.forEach(mh => {
-            stack.push(mh.ParentMission);
-        });
-
-        // Find operational data connected to the current node
-        const operationalToMission = missionOperationalData.filter(mo => mo.Mission === currentNode);
-        // Add operational data to the stack for processing
-        operationalToMission.forEach(mo => {
-            stack.push(mo.OperationalData);
-        });
-    }
-
-    // Batch update: highlight all processed nodes at once
-    const updates = Array.from(processed).map(node => {
-        // Check if the node belongs to OperationalData or Mission
-        const color = operationalData.some(od => od.UUID === node) ? colorOperationalData : colorMission;
-        return { id: node, color: color };
-    });
-    data.nodes.update(updates);
-}
-
-
-function highlightConnectedNodesBackwards(nodeId, colorMission, colorOperationalData) {
-    // Use a Set to keep track of nodes that have already been processed
-    const processed = new Set();
-    // Use a stack for iterative processing
-    const stack = [nodeId];
-
-    while (stack.length > 0) {
-        const currentNode = stack.pop();
-
-        // Skip if the node has already been processed
-        if (processed.has(currentNode)) {
-            continue;
-        }
-
-        // Mark the node as processed
-        processed.add(currentNode);
-
-        // Find parent missions connected to the current node
-        const childrenMissions = missionHierarchy.filter(mh => mh.ParentMission === currentNode);
-        // Add parent missions to the stack for processing
-        childrenMissions.forEach(mh => {
-            stack.push(mh.ChildMission);
-        });
-
-        // Find operational data connected to the current node
-        const operationalToMission = missionOperationalData.filter(mo => mo.Mission === currentNode);
-        // Add operational data to the stack for processing
-        operationalToMission.forEach(mo => {
-            stack.push(mo.OperationalData);
-        });
-    }
-
-    // Batch update: highlight all processed nodes at once
-    const updates = Array.from(processed).map(node => {
-        // Check if the node belongs to OperationalData or Mission
-        const color = operationalData.some(od => od.UUID === node) ? colorOperationalData : colorMission;
-        return { id: node, color: color };
-    });
-    data.nodes.update(updates);
-}
-
-
-
 
 
 // Handle node selection for creating connections
@@ -272,7 +79,7 @@ myNetwork.on("selectNode", function (params) {
     if (params.event.srcEvent.shiftKey) {  // Check if shift key is pressed
         if (firstSelectedNode === null) {
             firstSelectedNode = params.nodes[0];
-        } else if (firstSelectedNode !== params.nodes[0]) {
+        } else if (firstSelectedNode !== params.nodes[0]) { // Check if the same node is not selected twice
             const fromNode = data.nodes.get(firstSelectedNode);
             const toNode = data.nodes.get(params.nodes[0]);
 
@@ -294,7 +101,6 @@ myNetwork.on("selectNode", function (params) {
             }
 
             firstSelectedNode = null;
-            printData();
         }
     } else {
         // If neither shift nor 'i' key is pressed, clear the selection and reset colors
@@ -311,14 +117,14 @@ myNetwork.on("selectNode", function (params) {
 });
 
 
-
-
 // Display node details in the information viewer panel
 myNetwork.on("selectNode", function (params) {
+    // Display node details in the information viewer panel
     const nodeId = params.nodes[0];
     const node = data.nodes.get(nodeId);
     let nodeDetails = "";
 
+    // Display node details based on the type of node
     if (node.group === 'Mission') {
         const missionDetail = missionData.find(m => m.UUID === nodeId);
         nodeDetails = `<p><strong>Name:</strong> ${missionDetail.Name}</p>
@@ -335,12 +141,11 @@ myNetwork.on("selectNode", function (params) {
 
 // Clear selection when clicking on empty space
 myNetwork.on("click", function (params) {
+    // Clear selection
     if (params.nodes.length === 0) {
         firstSelectedNode = null;
     }
 });
-
-
 
 
 // Import JSON
@@ -388,7 +193,6 @@ document.getElementById('jsonInput').addEventListener('change', (event) => {
             });
         }
 
-        printData(); // Print updated data
     };
     reader.readAsText(file);
 });
@@ -407,8 +211,9 @@ document.getElementById('saveData').addEventListener('click', () => {
 
 });
 
-
-document.getElementById('bottomUpButton').addEventListener('click', () => {
+// Send data to server for backend processing
+function sendToServer(url) {
+    // Format data for sending to server
     const formattedData = {
         Mission: missionData,
         OperationalData: operationalData,
@@ -416,8 +221,7 @@ document.getElementById('bottomUpButton').addEventListener('click', () => {
         Mission_OperationalData: missionOperationalData
     };
 
-    // Send data to the Flask server
-    const url = 'http://127.0.0.1:6868/bottom_up_process'; // Ensure this matches your Flask route
+    // Format the request packages
     const options = {
         method: 'POST',
         headers: {
@@ -426,6 +230,7 @@ document.getElementById('bottomUpButton').addEventListener('click', () => {
         body: JSON.stringify(formattedData)
     };
 
+    // Hit the endpoint for the respective analysis
     fetch(url, options)
         .then(res => {
             if (!res.ok) {
@@ -435,96 +240,10 @@ document.getElementById('bottomUpButton').addEventListener('click', () => {
         })
         .then(res => console.log(res))
         .catch(err => console.error('error:' + err));
-});
+}
 
+// Attach event listeners to buttons and specify the respective endpoint URL
+document.getElementById('bottomUpButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6868/bottom_up_process'));
+document.getElementById('bfsButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6868/bfs_dfs_analysis'));
+document.getElementById('pageRankButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6868/pagerank_analysis'));
 
-document.getElementById('bfsButton').addEventListener('click', () => {
-    const formattedData = {
-        Mission: missionData,
-        OperationalData: operationalData,
-        MissionHierarchy: missionHierarchy,
-        Mission_OperationalData: missionOperationalData
-    };
-
-    // Send data to the Flask server
-    const url = 'http://127.0.0.1:6868/bfs_dfs_analysis';
-    const options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formattedData)
-    };
-
-    fetch(url, options)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Network response was not ok ' + res.statusText);
-            }
-            return res.json();
-        })
-        .then(res => console.log(res))
-        .catch(err => console.error('error:' + err));
-});
-
-
-
-document.getElementById('pageRankButton').addEventListener('click', () => {
-    const formattedData = {
-        Mission: missionData,
-        OperationalData: operationalData,
-        MissionHierarchy: missionHierarchy,
-        Mission_OperationalData: missionOperationalData
-    };
-
-    // Send data to the Flask server
-    const url = 'http://127.0.0.1:6868/pagerank_analysis';
-    const options = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formattedData)
-    };
-
-    fetch(url, options)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error('Network response was not ok ' + res.statusText);
-            }
-            return res.json();
-        })
-        .then(res => console.log(res))
-        .catch(err => console.error('error:' + err));
-});
-
-
-
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'i' || event.key === 'I') {
-        const selectedNodes = myNetwork.getSelectedNodes();
-        if (selectedNodes.length > 0) {
-            const selectedNode = data.nodes.get(selectedNodes[0]);
-            if (selectedNode.group === 'Mission') {
-                listLeafMissionNodes(selectedNode.id);
-            }
-        }
-    } else if (event.key === 'h' || event.key === 'H') { // Use 'h' key for highlighting forwards
-        const selectedNodes = myNetwork.getSelectedNodes();
-        if (selectedNodes.length > 0) {
-            const selectedNode = data.nodes.get(selectedNodes[0]);
-            if (selectedNode.group === 'Mission') {
-                highlightConnectedNodes(selectedNode.id, '#ffcc99', '#ccffcc');
-            }
-        }
-    } else if (event.key === 'b' || event.key === 'B') { // Use 'h' key for highlighting
-        const selectedNodes = myNetwork.getSelectedNodes();
-        if (selectedNodes.length > 0) {
-            const selectedNode = data.nodes.get(selectedNodes[0]);
-            if (selectedNode.group === 'Mission') {
-                highlightConnectedNodesBackwards(selectedNode.id, '#ffcc99', '#ccffcc');
-            }
-        }
-    }
-    // Rest of the keydown event handling...
-});

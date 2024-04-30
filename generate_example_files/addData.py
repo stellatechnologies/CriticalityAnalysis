@@ -7,6 +7,7 @@ import string
 with open('networkData.json') as f:
     data = json.load(f)
 
+# Pull out the missions and mission hierarchy
 missions = data['Mission']
 mission_hierarchy = data['MissionHierarchy']
 
@@ -16,10 +17,6 @@ mission_with_children = set(mh['ParentMission'] for mh in mission_hierarchy)
 # Find all missions that don't have any Child missions
 missions_without_children = [mission for mission in missions if mission['UUID'] not in mission_with_children]
 
-    
-    
-    
-    
     
 
 # Function to generate a random string of characters of length 3-4

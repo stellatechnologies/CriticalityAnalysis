@@ -6,6 +6,7 @@ import random
 with open('networkData.json') as f:
     data = json.load(f)
 
+# Pull out the missions and mission hierarchy
 missions = data['Mission']
 mission_hierarchy = data['MissionHierarchy']
 
