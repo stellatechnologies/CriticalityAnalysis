@@ -12,7 +12,7 @@ The Electrum application can be built with:
 `npm package`
 
 The Python Flask will need to be ran (only locally at this point):
-`python ./app`
+`python ./app.py`
 
 
 # Example Network
