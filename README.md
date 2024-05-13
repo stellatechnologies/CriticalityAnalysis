@@ -1,5 +1,5 @@
 # Overview
-Criticality Analysis tool that dehlps determine the "Criticality" (importance) different data elements have to completing missions.
+Criticality Analysis tool that helps determine the "Criticality" (importance) different data elements have to completing missions.
 
 Application utilizes a Python Flask backend for all calculations with a Electrum - NodeJS frontend for the graphical user interface. 
 
