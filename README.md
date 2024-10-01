@@ -3,7 +3,7 @@ Criticality Analysis tool that helps determine the "Criticality" (importance) di
 
 Application utilizes a Python Flask backend for all calculations with a Electrum - NodeJS frontend for the graphical user interface. 
 
-This Criticality Analysis tool will accept data that conforms to the Cyber Data Schema v1.0 and expects the following Objects: Mission, MissionHierarchy, OperationalData, MissionData.
+This Criticality Analysis tool will accept data that conforms to the Cyber Data Schema v2.0.0 and expects the following Objects: Mission, OperationalData, MissionData.
 
 As of 01OCT24, the tool does not take into account different "importance" rankings for individual missions, does not account for Safety-Critical attributes, nor handles multi-tiered Operational Data (in theory a GPS data could be needed for navigation files as well as weapon tract files and this dependency likely has analytical relevancy).
 
