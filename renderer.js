@@ -23,6 +23,9 @@ const options = {
         arrows: {
             to: { enabled: true, scaleFactor: 1, type: 'arrow' }
         }
+    },
+    physics: {
+        enabled: false
     }
 };
 
@@ -36,6 +39,12 @@ const operationalData = [];
 const missionHierarchy = [];
 const missionOperationalData = [];
 
+// Toggle physics
+let physicsEnabled = false;
+document.getElementById('togglePhysics').addEventListener('click', () => {
+    physicsEnabled = !physicsEnabled;
+    myNetwork.setOptions({ physics: { enabled: physicsEnabled } });
+});
 
 // Adding missions to the network
 document.getElementById('addMission').addEventListener('click', () => {
@@ -152,73 +161,132 @@ myNetwork.on("click", function (params) {
 document.getElementById('jsonInput').addEventListener('change', (event) => {
     const file = event.target.files[0];
     const reader = new FileReader();
+    
+    // Show loading overlay
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    
     reader.onload = function (e) {
-        const importedData = JSON.parse(e.target.result);
+        console.time('Total JSON processing');
 
-        // Clear current data
+        console.time('JSON parsing');
+        const importedData = JSON.parse(e.target.result);
+        console.timeEnd('JSON parsing');
+
+        console.time('Clear current data');
         missionData.length = 0;
         operationalData.length = 0;
         missionHierarchy.length = 0;
         missionOperationalData.length = 0;
         data.nodes.clear();
         data.edges.clear();
+        console.timeEnd('Clear current data');
 
-        // Load Missions and Operational Data
+        console.time('Load Missions and Operational Data');
+        console.time('Load Missions and Operational Data');
+        const newNodes = [];
+        const newEdges = [];
+
         if (importedData.Mission) {
+            missionData.push(...importedData.Mission);
+            newNodes.push(...importedData.Mission.map(item => ({ 
+                id: item.UUID, 
+                label: item.Name, 
+                color: '#a79aff', 
+                group: 'Mission' 
+            })));
+
             importedData.Mission.forEach(item => {
-                missionData.push(item);
-                data.nodes.add({ id: item.UUID, label: item.Name, color: '#a79aff', group: 'Mission' });
+                // If the item Name is "Sensor Deployment"
+                if (item.Name === "1") {
+                    console.log(item);
+                }
+                if (item.Children) {
+
+                    item.Children.forEach(child => {
+                        // If the child Name is "Sensor Deployment"
+                        if (item.Name === "1") {
+                            console.log(child);
+                        }
+                        missionHierarchy.push({ ParentMission: item.UUID, ChildMission: child });
+                        newEdges.push({ from: child, to: item.UUID, arrows: 'to' });
+                    });
+                }
             });
         }
+
         if (importedData.OperationalData) {
-            importedData.OperationalData.forEach(item => {
-                operationalData.push(item);
-                data.nodes.add({ id: item.UUID, label: item.Name, color: '#ffffa8', group: 'OperationalData' });
-            });
+            operationalData.push(...importedData.OperationalData);
+            newNodes.push(...importedData.OperationalData.map(item => ({ 
+                id: item.UUID, 
+                label: item.Name, 
+                color: '#ffffa8', 
+                group: 'OperationalData' 
+            })));
         }
 
-        // Load Mission Hierarchy
-        if (importedData.MissionHierarchy) {
-            importedData.MissionHierarchy.forEach(item => {
-                missionHierarchy.push(item);
-                data.edges.add({ from: item.ChildMission, to: item.ParentMission, arrows: 'to' });
-            });
-        }
+        data.nodes.add(newNodes);
+        data.edges.add(newEdges);
 
-        // Load Mission Operational Data
-        if (importedData.Mission_OperationalData) {
-            importedData.Mission_OperationalData.forEach(item => {
-                missionOperationalData.push(item);
-                data.edges.add({ from: item.OperationalData, to: item.Mission, arrows: 'to' });
-            });
-        }
+        console.timeEnd('Load Missions and Operational Data');
+        console.timeEnd('Load Mission Hierarchy');
 
+        console.time('Load Mission Operational Data');
+        if (importedData.MissionData) {
+            const newEdges = [];
+            const newMissionOperationalData = [];
+            importedData.MissionData.forEach(item => {
+                newMissionOperationalData.push(item);
+                newEdges.push({ from: item.OperationalData_ID, to: item.Mission_ID, arrows: 'to' });
+            });
+            missionOperationalData.push(...newMissionOperationalData);
+            data.edges.add(newEdges);
+        }
+        console.timeEnd('Load Mission Operational Data');
+
+        console.timeEnd('Total JSON processing');
+        
+        // Hide loading overlay
+        document.getElementById('loading-overlay').classList.add('hidden');
     };
     reader.readAsText(file);
 });
 
 // Save JSON
 document.getElementById('saveData').addEventListener('click', () => {
+    // Show loading overlay
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    
     const formattedData = {
         Mission: missionData,
         OperationalData: operationalData,
         MissionHierarchy: missionHierarchy,
-        Mission_OperationalData: missionOperationalData
+        MissionData: missionOperationalData
     };
 
     // Save data to a JSON file
-    fs.writeFileSync('networkData.json', JSON.stringify(formattedData, null, 2));
-
+    fs.writeFile('networkData.json', JSON.stringify(formattedData, null, 2), (err) => {
+        // Hide loading overlay
+        document.getElementById('loading-overlay').classList.add('hidden');
+        
+        if (err) {
+            console.error('Error saving file:', err);
+        } else {
+            console.log('File saved successfully');
+        }
+    });
 });
 
 // Send data to server for backend processing
 function sendToServer(url) {
+    // Show loading overlay
+    document.getElementById('loading-overlay').classList.remove('hidden');
+    
     // Format data for sending to server
     const formattedData = {
         Mission: missionData,
         OperationalData: operationalData,
         MissionHierarchy: missionHierarchy,
-        Mission_OperationalData: missionOperationalData
+        MissionData: missionOperationalData
     };
 
     // Format the request packages
@@ -238,12 +306,19 @@ function sendToServer(url) {
             }
             return res.json();
         })
-        .then(res => console.log(res))
-        .catch(err => console.error('error:' + err));
+        .then(res => {
+            console.log(res);
+            // Hide loading overlay
+            document.getElementById('loading-overlay').classList.add('hidden');
+        })
+        .catch(err => {
+            console.error('error:' + err);
+            // Hide loading overlay
+            document.getElementById('loading-overlay').classList.add('hidden');
+        });
 }
 
 // Attach event listeners to buttons and specify the respective endpoint URL
-document.getElementById('bottomUpButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6868/bottom_up_process'));
-document.getElementById('bfsButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6868/bfs_dfs_analysis'));
-document.getElementById('pageRankButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6868/pagerank_analysis'));
-
+document.getElementById('bottomUpButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6969/bottom_up_process'));
+document.getElementById('bfsButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6969/bfs_dfs_analysis'));
+document.getElementById('pageRankButton').addEventListener('click', () => sendToServer('http://127.0.0.1:6969/pagerank_analysis'));

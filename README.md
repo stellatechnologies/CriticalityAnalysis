@@ -5,13 +5,19 @@ Application utilizes a Python Flask backend for all calculations with a Electrum
 
 This Criticality Analysis tool will accept data that conforms to the Cyber Data Schema v1.0 and expects the following Objects: Mission, MissionHierarchy, OperationalData, MissionData.
 
-As of 10May24, the tool does not take into account different "importance" rankings for individual missions or multi-tiered Operational Data (in theory a GPS data could be needed for navigation files as well as weapon tract files and this dependency likely has analytical relevancy).
+As of 01OCT24, the tool does not take into account different "importance" rankings for individual missions, does not account for Safety-Critical attributes, nor handles multi-tiered Operational Data (in theory a GPS data could be needed for navigation files as well as weapon tract files and this dependency likely has analytical relevancy).
 
 # How To Build
 The Electrum application can be built with:
-`npm package`
+`npm run package`
+
+# How To Run
+The Electrum application (frontend) can be ran from:
+
+`./release-builds/Criticality-Analysis-win32-x64/Criticality-Analysis.exe`
 
 The Python Flask will need to be ran (only locally at this point):
+
 `python ./app.py`
 
 
