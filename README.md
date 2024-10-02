@@ -16,6 +16,12 @@ The Electrum application (frontend) can be ran from:
 
 `./release-builds/Criticality-Analysis-win32-x64/Criticality-Analysis.exe`
 
+Or if not using the built version:
+```
+npm install i
+npm run start
+```
+
 The Python Flask will need to be ran (only locally at this point):
 
 `python ./app.py`
